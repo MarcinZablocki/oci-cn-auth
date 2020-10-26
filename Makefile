@@ -1,5 +1,5 @@
 VERSION=0.1
-NAME=oci-auth
+NAME=oci-cn-auth
 CATEGORY=Development
 BUILD_ARCH=noarch
 OUT=OUT
@@ -8,7 +8,7 @@ SUMMARY=Oracle Cloud cluster networking authentication utility
 
 LICENSE=UPL-1.0
 VENDOR=Oracle
-LOCATION=/var/lib/oci-auth/
+LOCATION=/var/lib/oci-cn-auth/
 BUILD_ROOT=build/root
 SCRIPTS_ROOT=build/scripts
 

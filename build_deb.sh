@@ -1,6 +1,6 @@
 iter=$1
 fpm -s dir \
-  -f -n oci-auth \
+  -f -n oci-cn-auth \
   -t deb \
   --iteration $iter \
   --category Tools \
@@ -19,11 +19,11 @@ fpm -s dir \
   --prefix / \
   --config-files /etc/rdma/oracle_rdma.conf \
   src/var/lib/=/var/lib/ \
-  src/bin/oci-auth=/usr/bin/oci-auth \
+  src/bin/oci-cn-auth=/usr/bin/oci-cn-auth \
   src/etc/rdma/oracle_rdma.conf=/etc/rdma/oracle_rdma.conf \
-  src/var/lib/oci-auth/share/oci-auth.service=/lib/systemd/system/oci-auth.service \
-  src/var/lib/oci-auth/share/oci-auth.timer=/lib/systemd/system/oci-auth.timer \
-  src/var/lib/oci-auth/bin/ifup-rdma=/etc/network/if-up.d/ifup-rdma
+  src/var/lib/oci-cn-auth/share/oci-cn-auth.service=/lib/systemd/system/oci-cn-auth.service \
+  src/var/lib/oci-cn-auth/share/oci-cn-auth.timer=/lib/systemd/system/oci-cn-auth.timer \
+  src/var/lib/oci-cn-auth/bin/ifup-rdma=/etc/network/if-up.d/ifup-rdma
 
 #  --depends "python36-requests python36-pyOpenSSL python36-jinja2 python36-psutil python36-cryptography" \
 

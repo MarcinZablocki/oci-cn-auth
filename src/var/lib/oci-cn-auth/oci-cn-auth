@@ -18,14 +18,14 @@ if __name__ == "__main__":
     config.sections()
     config.read(args.config)
 
-    if not config['DEFAULT']['private_key']:
+    if not config.get('DEFAULT', 'private_key'):
         raise KeyError("Prive key localtion not found in the configuration file.")
 
-    if not config['DEFAULT']['password']:
+    if not config.get('DEFAULT', 'password'):
         raise KeyError("Private key password not found in the configuration file.")
     
-    if not config['DEFAULT']['auto']:
-        if not config['DEFAULT']['interfaces']:
+    if not config.get('DEFAULT', 'auto'):
+        if not config.get('DEFAULT', 'interfaces'):
             raise KeyError("Interface definitions not found in the configuration file.")
 
 

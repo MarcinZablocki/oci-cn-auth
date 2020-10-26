@@ -1,6 +1,6 @@
 systemctl=$(which systemctl)
-${systemctl} stop oci-auth.timer
-${systemctl} stop oci-auth.service
-${systemctl} disable oci-auth.timer
-${systemctl} disable oci-auth.service
+${systemctl} stop oci-cn-auth.timer
+${systemctl} stop oci-cn-auth.service
+${systemctl} disable oci-cn-auth.timer
+${systemctl} disable oci-cn-auth.service
 ${systemctl} reset-failed

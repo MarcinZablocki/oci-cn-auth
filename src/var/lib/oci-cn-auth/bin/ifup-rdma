@@ -153,7 +153,7 @@ if not interface:
 mlnx_qos = shutil.which('mlnx_qos')
 cma_roce_mode = shutil.which('cma_roce_mode')
 cma_roce_tos = shutil.which('cma_roce_tos')
-oci_auth = shutil.which('oci-auth')
+oci_cn_auth = shutil.which('oci-cn-auth')
 ibdev2netdev = shutil.which('ibdev2netdev')
 sysctl = shutil.which('sysctl')
 
@@ -189,8 +189,8 @@ if not cma_roce_tos:
     print('Required Mellanox utility cma_roce_tos not found on the system')
     fail = True
 
-if not oci_auth: 
-    print('Required oci-auth found on the system')
+if not oci_cn_auth: 
+    print('Required oci-cn-auth found on the system')
     fail = True
 
 #if fail: 
@@ -279,4 +279,7 @@ if os.path.isfile(sys_np_cnp_dscp):
     with open(sys_np_cnp_dscp, 'w') as np_cnp_dscp:
         np_cnp_dscp.write(str(DSCP_CNP_VALUE))
 
+run_command(oci_cn_auth)
+
 print('Interface {} configuration complete'.format(interface))
+
