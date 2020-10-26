@@ -3,15 +3,27 @@
 import psutil
 import subprocess
 import tempfile
-import lib.cert
-import lib.systemd
-import lib.metadata
 from jinja2 import Environment, FileSystemLoader
 import filecmp
 import os
 import shutil
 import socket
 import OpenSSL
+import lib.interfaces
+import lib.cert
+import lib.systemd
+import lib.metadata
+
+def _interfaces(config): 
+    shape = lib.metadata.get_instance()['shape']
+    print
+    if config.getboolean('DEFAULT', 'auto') is True: 
+        interfaces = lib.interfaces.get_interfaces_by_shape(shape)
+
+    else: 
+        interfaces = config['DEFAULT']['interfaces'].split(',')
+
+    return interfaces
 
 def run_command(command):
     """ Execute systemd command """
@@ -105,10 +117,12 @@ def create_unit(interface, write):
 def check_units(config, write=True, start=True): 
 
     """ Checks if systemd unit files exist for configured interfaces """
+    
+    interfaces = _interfaces(config)
 
     changed = {}
 
-    interfaces = config['DEFAULT']['interfaces'].split(',')
+
     system_interfaces = psutil.net_if_stats()
 
     for interface in interfaces: 

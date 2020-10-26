@@ -24,8 +24,10 @@ if __name__ == "__main__":
     if not config['DEFAULT']['password']:
         raise KeyError("Private key password not found in the configuration file.")
     
-    if not config['DEFAULT']['interfaces']:
-        raise KeyError("Interface definitions not found in the configuration file.")
+    if not config['DEFAULT']['auto']:
+        if not config['DEFAULT']['interfaces']:
+            raise KeyError("Interface definitions not found in the configuration file.")
+
 
     if args.info: 
         lib.util.check_certificates(config, write=False)
