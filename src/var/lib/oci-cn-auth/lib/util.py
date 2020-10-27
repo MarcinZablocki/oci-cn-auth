@@ -198,7 +198,7 @@ def _should_configure(config, interface):
             
     return True 
 
-def _check_units(config, write=True, start=True): 
+def check_units(config, write=True, start=True): 
     system_interfaces = _interfaces(config)
 
     for i in system_interfaces: 
