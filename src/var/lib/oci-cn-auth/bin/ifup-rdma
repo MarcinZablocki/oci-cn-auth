@@ -148,7 +148,7 @@ else:
 
 if not interface: 
     print('no interface set')
-    os.exit(0)
+    sys.exit(0)
 
 mlnx_qos = shutil.which('mlnx_qos')
 cma_roce_mode = shutil.which('cma_roce_mode')

@@ -1,5 +1,5 @@
 ITERATION=$1
-VERSION=0.1.0
+VERSION=0.2.0
 PRODUCT_NAME=cn-auth
 RPM_NAME=oci-${PRODUCT_NAME}
 VENDOR=Oracle
@@ -10,6 +10,7 @@ DESCRIPTION="This software provides auto configuration of wpa supplicant for Ora
 fpm -s dir \
   -f -n oci-cn-auth \
   -t rpm \
+  --version "$VERSION" \
   --iteration "$ITERATION" \
   --category Tools \
   -a noarch \

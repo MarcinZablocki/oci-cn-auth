@@ -1,15 +1,25 @@
-iter=$1
+ITERATION=$1
+VERSION=0.2.0
+PRODUCT_NAME=cn-auth
+RPM_NAME=oci-${PRODUCT_NAME}
+VENDOR=Oracle
+URL="http://oracle.com"
+LICENSE="UPL-1.0"
+DESCRIPTION="This software provides auto configuration of wpa supplicant for Oracle cloud cluster network."
+
 fpm -s dir \
   -f -n oci-cn-auth \
   -t deb \
-  --iteration $iter \
+  --version "$VERSION" \
+  --iteration "$ITERATION" \
   --category Tools \
+  -a noarch \
+  --license "$LICENSE" \
+  --description "$DESCRIPTION" \
+  --vendor "$VENDOR" \
   -a noarch \
   -d "python3-psutil" -d "python3-openssl" -d "python3-cryptography" -d "python3-requests" -d "python3-jinja2" -d "wpasupplicant" \
   -d "python" -d "mlnx-ofed-kernel-utils" \
-  --description "Oracle Cloud cluster networking authentication utility" \
-  --license "UPL-1.0" \
-  --vendor "Oracle" \
   --after-install scripts/after-install-deb.sh \
   --after-remove scripts/after-remove.sh \
   --after-upgrade scripts/after-upgrade.sh \
