@@ -1,5 +1,5 @@
 ITERATION=$1
-VERSION=0.2.0
+VERSION=0.2.2
 PRODUCT_NAME=cn-auth
 RPM_NAME=oci-${PRODUCT_NAME}
 VENDOR=Oracle
@@ -17,7 +17,7 @@ fpm -s dir \
   --license "$LICENSE" \
   --description "$DESCRIPTION" \
   --vendor "$VENDOR" \
-  -d "python36-requests" -d "python36-pyOpenSSL" -d "python36-jinja2" -d "python36-psutil" -d "python36-cryptography" -d "wpa_supplicant" \
+  -d "python3-requests" -d "python3-pyOpenSSL" -d "python3-jinja2" -d "python3-psutil" -d "python3-cryptography" -d "wpa_supplicant" \
   --after-install scripts/after-install.sh \
   --after-remove scripts/after-remove.sh \
   --after-upgrade scripts/after-upgrade.sh \
