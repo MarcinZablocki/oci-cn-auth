@@ -145,6 +145,11 @@ def run_command(command):
 
 def template_wpa_config_file(config, instance_metadata):
     directory = os.path.dirname(os.path.abspath(__file__))
+
+    try: 
+        identity_n=socket.getaddrinfo(socket.gethostname(), 0, flags=socket.AI_CANONNAME)[0][3]+"-"+instance_metadata['id']
+    except (OSError, socket.gaierror):
+        identity_n=socket.getfqdn()+"-"+instance_metadata['id']
     
     j2_env = Environment(loader=FileSystemLoader(directory),
         trim_blocks=True)
@@ -152,7 +157,7 @@ def template_wpa_config_file(config, instance_metadata):
     return j2_env.get_template('templates/wpa_supplicant-wired-interface.conf').render(
         private_key_passwd=config['DEFAULT']['password'],
         private_key=config['DEFAULT']['private_key'],
-        identity=socket.getaddrinfo(socket.gethostname(), 0, flags=socket.AI_CANONNAME)[0][3]+"-"+instance_metadata['id']
+        identity=identity_n
     )
 
 def create_wpa_config_file(config, instance_metadata):
