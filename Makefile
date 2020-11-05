@@ -12,12 +12,11 @@ PKG_VENDOR=Oracle
 
 PKG_DEB=${PKG_NAME}_${PKG_VERSION}-${PKG_RELEASE}_${PKG_ARCH}.deb
 EL7_RPM=${PKG_NAME}-${PKG_VERSION}-${PKG_RELEASE}.el7.${PKG_ARCH_RPM}.rpm
-EL8_RPM=${PKG_NAME}-${PKG_VERSION}-${PKG_RELEASE}.el7.${PKG_ARCH_RPM}.rpm
+EL8_RPM=${PKG_NAME}-${PKG_VERSION}-${PKG_RELEASE}.el8.${PKG_ARCH_RPM}.rpm
 
-FPM_OPTS=-s -f -n oci-cn-auth \
+FPM_OPTS=-s dir -f -n oci-cn-auth \
 	-v $(PKG_VERSION) \
 	--iteration $(PKG_RELEASE) \
-	-C $(TMPINSTALLDIR) \
 	--maintainer ${PKG_MAINTAINER} \
 	--description $(PKG_DESCRIPTION) \
 	-a $(PKG_ARCH) \
@@ -47,33 +46,23 @@ RPM_SCRIPTS=--after-install scripts/after-install.sh \
   --before-upgrade scripts/before-upgrade.sh
 
 DEB_SCRIPTS=--after-install scripts/after-install-deb.sh \
-  --after-remove scripts/after-remove.sh \
-  --after-upgrade scripts/after-upgrade.sh \
-  --before-install scripts/before-install.sh \
-  --before-remove scripts/before-remove-deb.sh \
-  --before-upgrade scripts/before-upgrade.sh 
+--after-remove scripts/after-remove.sh \
+--after-upgrade scripts/after-upgrade.sh \
+--before-install scripts/before-install.sh \
+--before-remove scripts/before-remove-deb.sh \
+--before-upgrade scripts/before-upgrade.sh 
 
-TMPINSTALLDIR=/tmp/$(PKG_NAME)-fpm-install
+all: $(EL7_RPM) $(EL8_RPM) $(PKG_DEB)
 
+el7: $(EL7_RPM)
+el8: $(EL8_RPM)
+deb: $(PKG_DEB)
 
-el7: ${EL7_RPM}
-    
-	fpm -t rpm -p ${PKG_RPM} ${FPM_OPTS} \
-	  ${EL7_DEPS} \
-	  ${RPM_SCRIPTS} \
-	  ${FILES} \
-	  ${RPM_FILES}
+$(EL7_RPM): 
+	fpm -t rpm -p ${EL7_RPM} ${FPM_OPTS} ${EL7_DEPS} ${RPM_SCRIPTS} ${FILES} ${RPM_FILES}
 
-el8: ${EL8_RPM}
-	fpm -t rpm -p ${PKG_RPM} ${FPM_OPTS} \
-	  ${EL8_DEPS} \
-	  ${FILES} \
-	  ${RPM_FILES}
+$(EL8_RPM):
+	fpm -t rpm -p ${EL8_RPM} ${FPM_OPTS} ${EL8_DEPS} ${FILES} ${RPM_FILES}
 
-.PHONY: deb
-deb: ${PKG_DEB}
-	fpm -t deb -p ${PKG_DEB} ${FPM_OPTS} \
-	  ${DEB_DEPS} \
-	  ${DEB_SCRIPTS} \
-	  ${FILES} \
-	  ${DEB_FILES}
+$(PKG_DEB): 
+	fpm -t deb -p ${PKG_DEB} ${FPM_OPTS} ${DEB_DEPS} ${DEB_SCRIPTS} ${FILES} ${DEB_FILES}
