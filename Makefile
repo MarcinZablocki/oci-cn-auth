@@ -3,7 +3,7 @@
 PKG_NAME=oci-cn-auth
 PKG_DESCRIPTION="OCI cluster network authentication tool" 
 PKG_VERSION=0.2.3
-PKG_RELEASE=3
+PKG_RELEASE=4
 PKG_MAINTAINER="Marcin Zablocki \<marcin.zablocki@oracle.com\>"
 PKG_ARCH=all
 PKG_ARCH_RPM=noarch

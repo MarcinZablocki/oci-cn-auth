@@ -7,7 +7,6 @@ import shutil
 import argparse
 import os
 import requests
-import psutil
 import subprocess
 import sys
 
@@ -255,7 +254,7 @@ run_command(set_priority_to_tc)
 set_cma_roce_mode = [cma_roce_mode, '-d', mlnx_interface, '-p', '1', '-m', '2']
 run_command(set_cma_roce_mode)
 
-set_cma_roce_mode_tos = [cma_roce_mode, '-d', mlnx_interface, '-t', RDMA_DSCP_ECN_TOS_VALUE]
+set_cma_roce_mode_tos = [cma_roce_tos, '-d', mlnx_interface, '-t', RDMA_DSCP_ECN_TOS_VALUE]
 run_command(set_cma_roce_mode_tos)
 
 enable_ecn = [sysctl, '-w', 'net.ipv4.tcp_ecn=1']

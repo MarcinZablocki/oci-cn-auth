@@ -246,7 +246,7 @@ def check_units(config, write=True, start=True):
                     interface.service.delete()
                 
 def reload_wpa_supplicant(): 
-    for p in psutil.process_iter(['name']):
+    for p in psutil.process_iter(attrs=['name']):
         if p.info['name'] == 'wpa_supplicant':
             print('Sending HUP signal to PID: {}'.format(p.pid))
             p.send_signal(psutil.signal.SIGHUP)
