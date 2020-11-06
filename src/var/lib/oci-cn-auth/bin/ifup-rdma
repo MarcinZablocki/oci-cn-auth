@@ -58,7 +58,7 @@ def run_command(command):
 
 def get_interfaces(shape): 
     interfaces = {}
-    ids = shapes[shape]
+    ids = SHAPE[shape]
     for id in ids:
         name = get_dev_name_by_id(id)
         interfaces[name] = id

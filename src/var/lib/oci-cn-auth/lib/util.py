@@ -71,8 +71,9 @@ class WpaSupplicantService(object):
         directory = os.path.dirname(os.path.abspath(__file__))
         j2_env = Environment(loader=FileSystemLoader(directory),
             trim_blocks=True)
-        
-        return j2_env.get_template('templates/wpa_supplicant-wired@interface.service').render()
+        wpa_supplicant_path = shutil.which('wpa_supplicant')
+        return j2_env.get_template('templates/wpa_supplicant-wired@interface.service').render(
+            wpa_supplicant=wpa_supplicant_path)
 
     def create_unit(self, write=True):
         
