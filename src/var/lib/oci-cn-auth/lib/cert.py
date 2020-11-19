@@ -24,13 +24,11 @@ class Cert(object):
         """
 
         try:
-            san = self.cert.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-            cluster_information = json.loads(b64decode(san.value.get_values_for_type(x509.OtherName)[0].value).decode('utf-8'))
-            return cluster_information
-        except x509.ExtensionNotFound:
-            #print('Cluster metadata not found in certificate')
-            return None
+            self.cert.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            return True
 
+        except x509.ExtensionNotFound:
+            return False
 
 class LoadBundle(object):
 
