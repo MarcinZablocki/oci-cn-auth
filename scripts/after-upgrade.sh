@@ -1,3 +1,4 @@
+chmod a+x /sbin/ifup-local
 systemctl=$(which systemctl)
 ${systemctl} daemon-reload
 ${systemctl} enable --now oci-cn-auth.service
