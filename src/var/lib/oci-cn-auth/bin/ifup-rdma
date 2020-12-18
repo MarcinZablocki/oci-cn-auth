@@ -258,11 +258,18 @@ set_cma_roce_mode_tos = [cma_roce_tos, '-d', mlnx_interface, '-t', RDMA_DSCP_ECN
 run_command(set_cma_roce_mode_tos)
 
 enable_ecn = [sysctl, '-w', 'net.ipv4.tcp_ecn=1']
+run_command(enable_ecn)
 
 sys_cnp_802p_prio = '/sys/class/net/{}/ecn/roce_np/cnp_802p_prio'.format(interface)
 sys_cnp_dscp = '/sys/class/net/{}/ecn/roce_np/cnp_dscp'.format(interface)
 sys_np_cnp_prio = '/sys/kernel/debug/mlx5/{}/cc_params/np_cnp_prio'.format(interfaces[interface])
 sys_np_cnp_dscp = '/sys/kernel/debug/mlx5/{}/cc_params/np_cnp_dscp'.format(interfaces[interface])
+
+sys_traffic_class = '/sys/class/infiniband/{}/tc/1/traffic_class'.format(mlnx_interface)
+
+if os.path.isfile(sys_traffic_class): 
+    with open(sys_traffic_class, 'w') as traffic_class:
+        traffic_class.write(str(RDMA_DSCP_ECN_TOS_VALUE))
 
 if os.path.isfile(sys_cnp_802p_prio): 
     with open(sys_cnp_802p_prio, 'w') as cnp_802p_prio: 

@@ -305,7 +305,7 @@ def check_certificates(config, write=True):
             new_bundle = lib.cert.NewBundle(metadata_cert, metadata_private_key, private_key_passwd, metadata_ca)
         else: 
             print("old certificate valid until: {} | new certificate valid until: {}".format(old_bundle.not_valid_after, new_cert.not_valid_after))
-            #print('Certificate not changed. Skipping...')
+            print('Certificate not changed. Skipping...')
     else: 
         print("new certificate valid until: {}".format(new_cert.not_valid_after))
         print('Old bundle not found. Generating PKCS12')
@@ -318,4 +318,5 @@ def check_certificates(config, write=True):
             changed = True
 
     if changed and write: 
+        print("Reloading WPA Supplicant")
         reload_wpa_supplicant()
