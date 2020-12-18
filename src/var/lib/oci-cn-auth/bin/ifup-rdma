@@ -95,7 +95,7 @@ def get_instance():
     return get_metadata('instance')
 
 def set_dscp_to_prio(interface, dscp, tc): 
-    command = [mlnx_qos, '-i', interface, '--dscp2prio' 'set,{},{}'.format(dscp,tc)]
+    command = [mlnx_qos, '-i', interface, '--dscp2prio', 'set,{},{}'.format(dscp,tc)]
     result = run_command(command)
     return result
 
@@ -290,4 +290,5 @@ if os.path.isfile(sys_np_cnp_dscp):
 run_command(oci_cn_auth)
 
 print('Interface {} configuration complete'.format(interface))
+
 
