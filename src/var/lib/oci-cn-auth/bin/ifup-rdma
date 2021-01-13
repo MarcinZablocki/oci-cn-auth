@@ -157,6 +157,7 @@ cma_roce_tos = shutil.which('cma_roce_tos')
 oci_cn_auth = shutil.which('oci-cn-auth')
 ibdev2netdev = shutil.which('ibdev2netdev')
 sysctl = shutil.which('sysctl')
+systemctl = shutil.which('systemctl')
 
 shape = get_instance()['shape']
 interfaces = get_interfaces(shape)
@@ -289,6 +290,8 @@ if os.path.isfile(sys_np_cnp_dscp):
 
 run_command(oci_cn_auth)
 
+# Workaround for timer being stuck on boot on EL7
+restart_timer = [ systemctl, 'restart', 'oci-cn-auth.timer' ]
+run_command(restart_timer)
+
 print('Interface {} configuration complete'.format(interface))
-
-
