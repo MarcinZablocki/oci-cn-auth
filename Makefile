@@ -48,7 +48,7 @@ RPM_SCRIPTS=--after-install scripts/after-install.sh \
 DEB_SCRIPTS=--after-install scripts/after-install-deb.sh \
 --after-remove scripts/after-remove.sh \
 --after-upgrade scripts/after-upgrade.sh \
---before-install scripts/before-install-deb.sh \
+--before-install scripts/before-install.sh \
 --before-remove scripts/before-remove-deb.sh \
 --before-upgrade scripts/before-upgrade.sh 
 
