@@ -3,7 +3,7 @@
 PKG_NAME=oci-cn-auth
 PKG_DESCRIPTION="OCI cluster network authentication tool" 
 PKG_VERSION=0.2.4
-PKG_RELEASE=9
+PKG_RELEASE=10
 PKG_MAINTAINER="Marcin Zablocki \<marcin.zablocki@oracle.com\>"
 PKG_ARCH=all
 PKG_ARCH_RPM=noarch
@@ -48,7 +48,7 @@ RPM_SCRIPTS=--after-install scripts/after-install.sh \
 DEB_SCRIPTS=--after-install scripts/after-install-deb.sh \
 --after-remove scripts/after-remove.sh \
 --after-upgrade scripts/after-upgrade.sh \
---before-install scripts/before-install.sh \
+--before-install scripts/before-install-deb.sh \
 --before-remove scripts/before-remove-deb.sh \
 --before-upgrade scripts/before-upgrade.sh 
 
