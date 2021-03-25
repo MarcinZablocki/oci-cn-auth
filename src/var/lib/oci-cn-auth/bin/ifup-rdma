@@ -245,10 +245,10 @@ if result['exit_code'] != 0:
     sys.exit(1)
 
 if ip: 
-    command = [ip, 'link', 'set', 'dev', interface, 'txqueuelen', 200000]
+    command = [ip, 'link', 'set', 'dev', interface, 'txqueuelen', '200000']
     result = run_command(command)
 elif ifconfig: 
-    command = [ifconfig, interface, 'txqueuelen', 200000]
+    command = [ifconfig, interface, 'txqueuelen', '200000']
     result = run_command(command)
 
 if result['exit_code'] != 0: 
