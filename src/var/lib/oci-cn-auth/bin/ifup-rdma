@@ -202,6 +202,7 @@ if not oci_cn_auth:
 # Disable autonegotiation
 #
 ethtool = shutil.which('ethtool')
+
 set_autoneg_off = [ethtool, '-A', interface, 'autoneg', 'off', 'rx', 'off', 'tx', 'off']
 result = run_command(set_autoneg_off)
 
@@ -209,11 +210,20 @@ if result['exit_code'] == 1:
     print('Error running {}.\n{}'.format(str(set_autoneg_off).join(','), result['stderr'].read().decode('utf-8')))
     sys.exit(1)
 
-if result['exit_code'] == 78:
-    print('ethtool parameters not changed')
+set_ring = [ethtool, '-G', interface, 'rx', '8192', 'tx', '8192']
+result = run_command(set_ring)
 
-else: 
-    print('ethtool parameters set correctly')
+if result['exit_code'] == 1: 
+    print('Error running {}.\n{}'.format(str(set_ring).join(','), result['stderr'].read().decode('utf-8')))
+    sys.exit(1)
+
+set_channels = [ethtool, '-L', interface, 'combined', '8']
+result = run_command(set_channels)
+
+if result['exit_code'] == 1: 
+    print('Error running {}.\n{}'.format(str(set_ring).join(','), result['stderr'].read().decode('utf-8')))
+    sys.exit(1)
+
 
 ip = shutil.which('ip')
 if not ip: 
@@ -233,6 +243,19 @@ elif ifconfig:
 if result['exit_code'] != 0: 
     print('Error running {}.\n{}'.format(str(command).join(','), result['stderr'].read().decode('utf-8')))
     sys.exit(1)
+
+if ip: 
+    command = [ip, 'link', 'set', 'dev', interface, 'txqueuelen', 200000]
+    result = run_command(command)
+elif ifconfig: 
+    command = [ifconfig, interface, 'txqueuelen', 200000]
+    result = run_command(command)
+
+if result['exit_code'] != 0: 
+    print('Error running {}.\n{}'.format(str(command).join(','), result['stderr'].read().decode('utf-8')))
+    sys.exit(1)
+
+
 
 command = [mlnx_qos, '-i', interface, '--trust dscp']
 result = run_command(command)
