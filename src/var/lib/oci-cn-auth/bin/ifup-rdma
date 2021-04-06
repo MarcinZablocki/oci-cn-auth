@@ -217,13 +217,19 @@ if result['exit_code'] == 1:
     print('Error running {}.\n{}'.format(str(set_ring).join(','), result['stderr'].read().decode('utf-8')))
     sys.exit(1)
 
-set_channels = [ethtool, '-L', interface, 'combined', '8']
+if shape == 'BM.HPC2.36': 
+    set_channels = [ethtool, '-L', interface, 'combined', '18']
+
+if shape == 'BM.GPU4.8': 
+    set_channels = [ethtool, '-L', interface, 'combined', '8']
+
 result = run_command(set_channels)
 
-if result['exit_code'] == 1: 
-    print('Error running {}.\n{}'.format(str(set_ring).join(','), result['stderr'].read().decode('utf-8')))
-    sys.exit(1)
-
+# ignore if failed
+#
+# if result['exit_code'] == 1: 
+#    print('Error running {}.\n{}'.format(str(set_ring).join(','), result['stderr'].read().decode('utf-8')))
+#    sys.exit(1)
 
 ip = shutil.which('ip')
 if not ip: 
@@ -245,16 +251,35 @@ if result['exit_code'] != 0:
     sys.exit(1)
 
 if ip: 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     command = [ip, 'link', 'set', 'dev', interface, 'txqueuelen', '200000']
     result = run_command(command)
 elif ifconfig: 
     command = [ifconfig, interface, 'txqueuelen', '200000']
+=======
+=======
+>>>>>>> Stashed changes
+    command = [ip, 'link', 'set', 'dev', interface, 'txqueuelen', '20000']
+    result = run_command(command)
+elif ifconfig: 
+    command = [ifconfig, interface, 'txqueuelen', '20000']
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+    command = [ip, 'link', 'set', 'dev', interface, 'txqueuelen', '20000']
+    result = run_command(command)
+elif ifconfig: 
+    command = [ifconfig, interface, 'txqueuelen', '20000']
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     result = run_command(command)
 
 if result['exit_code'] != 0: 
     print('Error running {}.\n{}'.format(str(command).join(','), result['stderr'].read().decode('utf-8')))
     sys.exit(1)
-
 
 
 command = [mlnx_qos, '-i', interface, '--trust dscp']
