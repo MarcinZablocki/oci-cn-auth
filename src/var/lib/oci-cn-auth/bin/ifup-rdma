@@ -34,7 +34,8 @@ MLNX_DSCP = prio_0 + prio_1 + prio_2 + prio_3 + prio_4 + prio_5 + prio_6 + prio_
 SHAPES = {
     'BM.GPU4.8' : ["0000:48:00.0", "0000:4c:00.0", "0000:0c:00.0", "0000:16:00.0", "0000:c3:00.0", "0000:d1:00.0", "0000:8a:00.0", "0000:94:00.0",
                    "0000:48:00.1", "0000:4c:00.1", "0000:0c:00.1", "0000:16:00.1", "0000:c3:00.1", "0000:d1:00.1", "0000:8a:00.1", "0000:94:00.1"],
-    'BM.HPC2.36' : ["0000:5e:00.0"]
+    'BM.HPC2.36' : ["0000:5e:00.0"], 
+    'BM.Optimized3.36' : ["0000:98:00.0"]
 }
 
 
@@ -217,7 +218,7 @@ if result['exit_code'] == 1:
     print('Error running {}.\n{}'.format(str(set_ring).join(','), result['stderr'].read().decode('utf-8')))
     sys.exit(1)
 
-if shape == 'BM.HPC2.36': 
+if shape == 'BM.HPC2.36' or shape == 'BM.Optimized3.36': 
     set_channels = [ethtool, '-L', interface, 'combined', '18']
 
 if shape == 'BM.GPU4.8': 
