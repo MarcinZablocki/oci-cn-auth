@@ -62,7 +62,7 @@ class WpaSupplicantService(object):
         return lib.systemd.disable(self.service)['status']
 
     def delete(self): 
-        if self.unit: 
+        if os.path.isfile(self.unitfile): 
             return os.remove(self.unitfile)
         else: 
             return False
@@ -84,7 +84,7 @@ class WpaSupplicantService(object):
             tmpfile.write(template)
             tmpfile.flush()
 
-            if self.unit:
+            if self.unitfile:
 
                 if not filecmp.cmp(tmpfile.name, self.unitfile):
                     
@@ -211,12 +211,17 @@ def check_units(config, write=True, start=True):
         interface = RdmaInterface(i)
         should_configure = _should_configure(config, interface)
         
-        if should_configure: 
+        if should_configure:
             if interface.service.create_unit(write=False):
-                print('Updating unit: {}'.format(interface.interface))
+                if not write:
+                  print('Unit {} needs updating'.format(interface.interface))
+                else:
+                  print('Updating unit: {}'.format(interface.interface))
                 interface.service.create_unit()
-                print('Reloading systemd')                    
-                lib.systemd.reload()
+                if write:
+                  print('Reloading systemd')
+                  lib.systemd.reload()
+
             else: 
                 print('[ OK ] {}'.format(interface.service.service))
 
