@@ -84,7 +84,7 @@ class WpaSupplicantService(object):
             tmpfile.write(template)
             tmpfile.flush()
 
-            if self.unitfile:
+            if os.path.isfile(self.unitfile):
 
                 if not filecmp.cmp(tmpfile.name, self.unitfile):
                     
@@ -110,11 +110,6 @@ class WpaSupplicantService(object):
     @property
     def is_enabled(self): 
         return lib.systemd.is_enabled(self.service)['status']
-
-    @property
-    def unit(self): 
-        unit_file = '/etc/systemd/system/{}'.format(self.service)
-        return os.path.isfile(unit_file)
 
 def _interfaces(config): 
     shape = lib.metadata.get_instance()['shape']
