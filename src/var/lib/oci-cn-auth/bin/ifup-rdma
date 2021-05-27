@@ -167,7 +167,12 @@ systemctl = shutil.which('systemctl')
 shape = get_instance()['shape']
 interfaces = get_interfaces(shape)
 
-if not config.get('QOS', 'priority'):
+try: 
+    qos=config.get('QOS', 'priority')
+except:
+    qos="default"
+
+if qos == "default":
 
     """ read metadata and set the default priority based on shape """
 

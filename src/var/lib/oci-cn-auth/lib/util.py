@@ -241,7 +241,7 @@ def check_units(config, write=True, start=True):
                     print('Disabling {}'.format(interface.service.service)) 
                     interface.service.disable()
 
-                if interface.service.unit: 
+                if os.path.isfile(interface.service.unitfile): 
                     print('Deleting {}'.format(interface.service.service))
                     interface.service.delete()
                 
