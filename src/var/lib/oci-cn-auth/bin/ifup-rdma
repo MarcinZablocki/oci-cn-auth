@@ -9,15 +9,29 @@ import os
 import requests
 import subprocess
 import sys
+import configparser
+sys.path.append("/var/lib/oci-cn-auth/")
+from lib.metadata import get_metadata
+
+config = configparser.ConfigParser()
+config_file = "/etc/rdma/oracle_rdma.conf"
+
+config.sections()
+config.read(config_file)
+
+
 
 FLOWCTL_TYPE="PFC"
 MTU="4220"
 DSCP_IP_VALUE="00"
 DSCP_RDMA_VALUE="26"
+DSCP_GPU_VALUE="10"
 DSCP_CNP_VALUE="46"
 RDMA_DSCP_ECN_TOS_VALUE="105"
-DSCP_IP_TC="0"
+GPU_DSCP_ECN_TOS_VALUE="41"
+DSCP_IP_TC="1"
 DSCP_RDMA_TC="5"
+DSCP_GPU_TC="0"
 DSCP_CNP_TC="6"
 
 prio_0 = ["07", "06", "05", "04", "03", "02", "01", "00"]
@@ -79,16 +93,6 @@ def get_ib_name_by_dev(dev):
 
     return None
 
-
-def get_metadata(endpoint):
-    """ Make a request to metadata endpoint """
-
-    headers = { 'Authorization' : 'Bearer Oracle' }
-    metadata_url = "http://169.254.169.254/opc/"
-    metadata_ver = "2"
-    request_url = metadata_url + "v" + metadata_ver + "/" + endpoint
-    return requests.get(request_url, headers=headers).json()
-
 def get_identity():
     return get_metadata('identity')
 
@@ -106,7 +110,7 @@ def purge_dscp(interface, content):
             line = l.decode('utf-8')
             if 'prio:' in line: 
                 if dscp in line: 
-                    if dscp == DSCP_IP_VALUE or dscp == DSCP_RDMA_VALUE or dscp == DSCP_CNP_VALUE:
+                    if dscp == DSCP_IP_VALUE or dscp == DSCP_RDMA_VALUE or dscp == DSCP_CNP_VALUE or dscp == DSCP_GPU_VALUE:
                         continue
                 prio = line.split(':')[1][0]
                 
@@ -163,6 +167,32 @@ systemctl = shutil.which('systemctl')
 shape = get_instance()['shape']
 interfaces = get_interfaces(shape)
 
+try: 
+    qos=config.get('QOS', 'priority')
+except:
+    qos="default"
+
+if qos == "default":
+
+    """ read metadata and set the default priority based on shape """
+
+    if shape == 'BM.GPU4.8': 
+        DSCP=DSCP_GPU_VALUE
+        TC=GPU_DSCP_ECN_TOS_VALUE
+    else: 
+        DSCP=DSCP_RDMA_VALUE
+        TC=RDMA_DSCP_ECN_TOS_VALUE
+
+else: 
+
+    if config.get('QOS', 'priority') == 0: 
+        DSCP=DSCP_GPU_VALUE
+        TC=GPU_DSCP_ECN_TOS_VALUE
+
+    else: 
+        DSCP=DSCP_GPU_VALUE
+        TC=GPU_DSCP_ECN_TOS_VALUE
+    
 if not interface in interfaces: 
     print('Interface {} is not a valid RDMA interface. Skipping configuration.'.format(interface))
     sys.exit(0)
@@ -266,9 +296,10 @@ content = result['stdout'].readlines()
 purge_dscp(interface, content)
 set_dscp_to_prio(interface, DSCP_IP_VALUE, DSCP_IP_TC)
 set_dscp_to_prio(interface, DSCP_RDMA_VALUE, DSCP_RDMA_TC)
+set_dscp_to_prio(interface, DSCP_GPU_VALUE, DSCP_GPU_TC)
 set_dscp_to_prio(interface, DSCP_CNP_VALUE, DSCP_CNP_TC)
 
-set_pfc = [mlnx_qos, '-i', interface, '--pfc', '0,0,0,0,0,1,0,0']
+set_pfc = [mlnx_qos, '-i', interface, '--pfc', '1,0,0,0,0,1,0,0']
 run_command(set_pfc)
 
 set_priority_to_tc = [mlnx_qos, '-i', interface, '-p', '0,1,2,3,4,5,6,7']
@@ -277,7 +308,7 @@ run_command(set_priority_to_tc)
 set_cma_roce_mode = [cma_roce_mode, '-d', mlnx_interface, '-p', '1', '-m', '2']
 run_command(set_cma_roce_mode)
 
-set_cma_roce_mode_tos = [cma_roce_tos, '-d', mlnx_interface, '-t', RDMA_DSCP_ECN_TOS_VALUE]
+set_cma_roce_mode_tos = [cma_roce_tos, '-d', mlnx_interface, '-t', TC]
 run_command(set_cma_roce_mode_tos)
 
 enable_ecn = [sysctl, '-w', 'net.ipv4.tcp_ecn=1']
@@ -292,7 +323,7 @@ sys_traffic_class = '/sys/class/infiniband/{}/tc/1/traffic_class'.format(mlnx_in
 
 if os.path.isfile(sys_traffic_class): 
     with open(sys_traffic_class, 'w') as traffic_class:
-        traffic_class.write(str(RDMA_DSCP_ECN_TOS_VALUE))
+        traffic_class.write(str(TC))
 
 if os.path.isfile(sys_cnp_802p_prio): 
     with open(sys_cnp_802p_prio, 'w') as cnp_802p_prio: 
