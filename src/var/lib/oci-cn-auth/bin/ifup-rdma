@@ -70,6 +70,14 @@ def run_command(command):
 
     return result
 
+def get_interface_pci_id(name): 
+    with open('/sys/class/net/{}/device/uevent'.format(name), 'r') as f:
+    for line in f.readlines():
+        if 'PCI_SLOT_NAME' in line:
+            slot=line.split('=')[1]
+
+    return slot
+
 def get_interfaces(shape): 
     interfaces = {}
     ids = SHAPES[shape]
@@ -156,6 +164,11 @@ if not interface:
     print('no interface set')
     sys.exit(0)
 
+mlxreg = shutil.which('mlxreg')
+if not mlxreg: 
+   mlxreg = shutil.which('mstreg')
+
+mst = shutil.which('mst')
 mlnx_qos = shutil.which('mlnx_qos')
 cma_roce_mode = shutil.which('cma_roce_mode')
 cma_roce_tos = shutil.which('cma_roce_tos')
@@ -205,7 +218,6 @@ if not mlnx_interface:
 else: 
     print('{} : {}'.format(interface, mlnx_interface))
 
-
 if not ibdev2netdev:
     print('Required ibdev2netdev not found on the system')
     fail = True
@@ -249,10 +261,28 @@ if result['exit_code'] == 1:
     sys.exit(1)
 
 if shape == 'BM.HPC2.36' or shape == 'BM.Optimized3.36': 
+    # set 18 combined channels
     set_channels = [ethtool, '-L', interface, 'combined', '18']
 
 if shape == 'BM.GPU4.8': 
+    # set channels to combined 8 
     set_channels = [ethtool, '-L', interface, 'combined', '8']
+
+    # increase buffers and retransmission handling 
+
+    slot = get_interface_pci_id(interface)
+
+    roce_adp_retrans_en=[mlxreg, '--yes', '-d', slot, '--reg_name', 'ROCE_ACCL', '--set', 'roce_adp_retrans_en=1']
+    result = run_command(roce_adp_retrans_en)
+
+    roce_tx_window_en=[mlxreg, '--yes', '-d', slot, '--reg_name', 'ROCE_ACCL', '--set', 'roce_tx_window_en=1']
+    result = run_command(roce_tx_window_en)
+
+    roce_slow_restart_en=[mlxreg, '--yes', '-d', slot, '--reg_name', 'ROCE_ACCL', '--set', 'roce_slow_restart_en=1']
+    result = run_command(roce_slow_restart_en)
+    
+    command = [mlnx_qos, '-i', interface, '--buffer_size=32768,229120,0,0,0,0,0,0']
+    result = run_command(command)
 
 result = run_command(set_channels)
 
