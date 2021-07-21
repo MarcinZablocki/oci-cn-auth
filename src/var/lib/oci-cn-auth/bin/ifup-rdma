@@ -72,9 +72,9 @@ def run_command(command):
 
 def get_interface_pci_id(name): 
     with open('/sys/class/net/{}/device/uevent'.format(name), 'r') as f:
-    for line in f.readlines():
-        if 'PCI_SLOT_NAME' in line:
-            slot=line.split('=')[1]
+        for line in f.readlines():
+            if 'PCI_SLOT_NAME' in line:
+                slot=line.split('=')[1]
 
     return slot
 
@@ -281,8 +281,8 @@ if shape == 'BM.GPU4.8':
     roce_slow_restart_en=[mlxreg, '--yes', '-d', slot, '--reg_name', 'ROCE_ACCL', '--set', 'roce_slow_restart_en=1']
     result = run_command(roce_slow_restart_en)
     
-    command = [mlnx_qos, '-i', interface, '--buffer_size=32768,229120,0,0,0,0,0,0']
-    result = run_command(command)
+    set_buffer = [mlnx_qos, '-i', interface, '--buffer_size=32768,229120,0,0,0,0,0,0']
+    result = run_command(set_buffer)
 
 result = run_command(set_channels)
 
