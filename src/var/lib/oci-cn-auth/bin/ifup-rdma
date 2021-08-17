@@ -186,7 +186,7 @@ if qos == "default":
 
     """ read metadata and set the default priority based on shape """
 
-    if shape == 'BM.GPU4.8': 
+    if shape in GPU_SHAPES: 
         DSCP=DSCP_GPU_VALUE
         TC=GPU_DSCP_ECN_TOS_VALUE
     else: 
@@ -200,8 +200,8 @@ else:
         TC=GPU_DSCP_ECN_TOS_VALUE
 
     else: 
-        DSCP=DSCP_GPU_VALUE
-        TC=GPU_DSCP_ECN_TOS_VALUE
+        DSCP=DSCP_RDMA_VALUE
+        TC=RDMA_DSCP_ECN_TOS_VALUE
     
 if not interface in interfaces: 
     print('Interface {} is not a valid RDMA interface. Skipping configuration.'.format(interface))
