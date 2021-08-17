@@ -1,5 +1,5 @@
 import os 
-from config import SHAPES
+from lib.config import SHAPES
 
 def get_dev_name_by_id(id): 
     """ This assumes there are no virtual interfaces """
