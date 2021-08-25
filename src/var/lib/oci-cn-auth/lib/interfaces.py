@@ -3,8 +3,6 @@ import psutil
 import socket
 from lib.config import SHAPES
 
-from lib.util import WpaSupplicantService
-
 def get_dev_name_by_id(id): 
     """ This assumes there are no virtual interfaces """
     
