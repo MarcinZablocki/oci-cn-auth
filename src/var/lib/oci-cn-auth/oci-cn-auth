@@ -41,7 +41,6 @@ if __name__ == "__main__":
                 lib.util.check_units(config, interface,  write=False, start=False)
                 print(i.is_authenticated)
 
-
         else:
             reload = lib.util.check_certificates(config, write=True)
             reload = lib.util.check_configs(config, write=True)
