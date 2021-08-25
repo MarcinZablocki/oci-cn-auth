@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 import os
 import argparse
 import json
@@ -23,30 +23,35 @@ if __name__ == "__main__":
 
     if not config.get('DEFAULT', 'password'):
         raise KeyError("Private key password not found in the configuration file.")
-    
+
     if not config.get('DEFAULT', 'auto'):
         if not config.get('DEFAULT', 'interfaces'):
             raise KeyError("Interface definitions not found in the configuration file.")
 
-    if __name__ == '__main__': 
+    if __name__ == '__main__':
 
-        interfaces = lib.util._interfaces()
+        interfaces = lib.util._interfaces(config)
 
-        if args.info: 
+        if args.info:
             lib.util.check_certificates(config, write=False)
             lib.util.check_configs(config, write=False)
-            lib.util.check_units(config, write=False, start=False)
 
-        else: 
+            for interface in interfaces:
+                i = lib.util.WpaSupplicantService(interface)
+                lib.util.check_units(config, interface,  write=False, start=False)
+                print(i.is_authenticated)
+
+
+        else:
             reload = lib.util.check_certificates(config, write=True)
             reload = lib.util.check_configs(config, write=True)
-            
+
             for interface in interfaces:
-                
+
                 changed = lib.util.check_units(config, interface, write=True, start=True)
-                if changed: 
+                if changed:
                     lib.util.reload_wpa_supplicant(config, interface)
 
-                if reload: 
+                if reload:
                     i = lib.util.WpaSupplicantService(interface)
                     i.reconfigure()

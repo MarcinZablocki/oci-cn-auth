@@ -5,7 +5,7 @@ from lib.config import SHAPES
 from lib.util import WpaSupplicantService
 
 
-class RdmaInterface(object): 
+class RdmaInterface(): 
     def __init__(self, interface): 
         self.interface = interface
         self.service = WpaSupplicantService(interface)

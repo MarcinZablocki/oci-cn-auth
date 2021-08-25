@@ -61,15 +61,16 @@ class WpaSupplicantService(object):
     def is_authenticated(self):
 
         status = self.sendAndReceive('STATUS')
+
         for line in status.splitlines():
             if 'suppPortStatus' in line:
-                status=line.split('=')[1]
+                state=line.split('=')[1]
 
-            if status == 'Authorized':
-
-                return True
-            else: 
-                return False
+        #print(state)
+        if state == 'Authorized':
+            return True
+        else:
+            return False
 
     def reconfigure(self): 
 
