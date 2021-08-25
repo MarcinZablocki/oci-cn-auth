@@ -278,10 +278,10 @@ def check_units(config, interface, write=True, start=True):
             if write:
                 if rdma_interface.service.is_running:
                     print('Stopping {}'.format(rdma_interface.service.service)) 
-                    interface.service.stop()
+                    rdma_interface.service.stop()
                 if rdma_interface.service.is_enabled:
                     print('Disabling {}'.format(rdma_interface.service.service)) 
-                    interface.service.disable()
+                    rdma_interface.service.disable()
 
                 if os.path.isfile(rdma_interface.service.unitfile): 
                     print('Deleting {}'.format(rdma_interface.service.service))
