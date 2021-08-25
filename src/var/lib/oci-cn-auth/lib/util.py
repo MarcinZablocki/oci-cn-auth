@@ -354,7 +354,5 @@ def check_certificates(config, write=True):
         with open(private_key, 'wb') as pkcs12:
             pkcs12.write(new_bundle.export_pkcs12())
             changed = True
-
-    if changed and write: 
-        print("Reloading WPA Supplicant")
-        reload_wpa_supplicant(config)
+    
+    return changed
