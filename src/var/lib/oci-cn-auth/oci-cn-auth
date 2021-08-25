@@ -54,6 +54,3 @@ if __name__ == "__main__":
 
                 if reload:
                     i.reconfigure()
-
-                if not i.is_authenticated:
-                    i.reauthenticate()
