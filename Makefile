@@ -2,8 +2,8 @@
 
 PKG_NAME=oci-cn-auth
 PKG_DESCRIPTION="OCI cluster network authentication tool" 
-PKG_VERSION=0.2.9
-PKG_RELEASE=2
+PKG_VERSION=0.2.10
+PKG_RELEASE=0
 PKG_MAINTAINER="Marcin Zablocki \<marcin.zablocki@oracle.com\>"
 PKG_ARCH=all
 PKG_ARCH_RPM=noarch
@@ -35,8 +35,10 @@ FILES=--prefix / \
   src/var/lib/oci-cn-auth/share/oci-cn-auth.service=/lib/systemd/system/oci-cn-auth.service \
   src/var/lib/oci-cn-auth/share/oci-cn-auth.timer=/lib/systemd/system/oci-cn-auth.timer
 
-DEB_FILES=src/var/lib/oci-cn-auth/bin/ifup-rdma=/etc/network/if-up.d/ifup-rdma
-RPM_FILES=src/var/lib/oci-cn-auth/bin/ifup-rdma=/sbin/ifup-local
+DEB_FILES=src/var/lib/oci-cn-auth/bin/ifup-rdma=/sbin/ifup-rdma \
+  src/var/lib/oci-cn-auth/bin/ifup-local=/etc/network/if-up.d/ifup-rdma
+RPM_FILES=src/var/lib/oci-cn-auth/bin/ifup-rdma=/sbin/ifup-rdma \
+  src/var/lib/oci-cn-auth/bin/ifup-local=/sbin/ifup-local
 
 RPM_SCRIPTS=--after-install scripts/after-install.sh \
   --after-remove scripts/after-remove.sh \
