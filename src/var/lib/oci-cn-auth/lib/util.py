@@ -9,12 +9,41 @@ import os
 import shutil
 import socket
 import OpenSSL
-from lib.interfaces import get_dev_name_by_id, get_interfaces_by_shape, RdmaInterface
+import lib.interfaces
 import lib.cert
 import lib.systemd
 import lib.metadata
-        
-class WpaSupplicantService(object):
+
+class RdmaInterface():
+    def __init__(self, interface):
+        self.interface = interface
+        self.service = WpaSupplicantService(interface)
+
+    @property
+    def is_up(self):
+        interfaces = psutil.net_if_stats()
+        if self.interface not in interfaces:
+            return False
+        else:
+            return interfaces[self.interface].isup
+
+    @property
+    def ips(self):
+        interfaces = psutil.net_if_addrs()
+
+        ips = []
+
+        if self.interface not in interfaces:
+            return ips
+
+        for link in interfaces[self.interface]:
+            if link.family == socket.AF_INET:
+                if link.address:
+                    ips.append(link.address)
+
+        return ips
+       
+class WpaSupplicantService():
     def __init__(self, interface): 
         self.interface = interface
         self.service = 'wpa_supplicant-wired@{}.service'.format(interface)
