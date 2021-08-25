@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     if __name__ == '__main__': 
 
-        interfaces = lib.util._interfaces()
+        interfaces = lib.util._interfaces(config)
 
         if args.info: 
             lib.util.check_certificates(config, write=False)
