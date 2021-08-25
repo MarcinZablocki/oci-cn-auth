@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ -f /etc/os-release] ; then 
+    source /etc/os-release
+else
+    echo "Unable to detect or unsupported operating system" 
+    exit 1
+
+
+if [ $ID == "ol" ] || [ $ID == "centos" ] ; then
+    IFACE=$1
+
+#[ "$IFACE" != "lo" ] || exit 0
+#[ "$IFACE" != "--all" ] || exit 0
+
+#echo $IFACE
+nohup /sbin/ifup-rdma $IFACE >/dev/null 2>&1 &

@@ -28,15 +28,25 @@ if __name__ == "__main__":
         if not config.get('DEFAULT', 'interfaces'):
             raise KeyError("Interface definitions not found in the configuration file.")
 
+    if __name__ == '__main__': 
 
-    if args.info: 
-        lib.util.check_certificates(config, write=False)
-        lib.util.check_configs(config, write=False)
-        lib.util.check_units(config, write=False, start=False)
-    else: 
-        lib.util.check_certificates(config, write=True)
-        lib.util.check_configs(config, write=True)
-        lib.util.check_units(config, write=True, start=True)
-    
+        interfaces = lib.util._interfaces()
 
-    
+        if args.info: 
+            lib.util.check_certificates(config, write=False)
+            lib.util.check_configs(config, write=False)
+            lib.util.check_units(config, write=False, start=False)
+
+        else: 
+            reload = lib.util.check_certificates(config, write=True)
+            reload = lib.util.check_configs(config, write=True)
+            
+            for interface in interfaces:
+                
+                changed = lib.util.check_units(config, interface, write=True, start=True)
+                if changed: 
+                    lib.util.reload_wpa_supplicant(config, interface)
+
+                if reload: 
+                    i = lib.util.WpaSupplicantService(interface)
+                    i.reconfigure()

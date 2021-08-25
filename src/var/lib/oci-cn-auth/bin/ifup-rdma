@@ -134,24 +134,11 @@ if not os.geteuid()==0:
 
 fail = False
 
+parser = argparse.ArgumentParser(description='configure mellanox interface')
+parser.add_argument('interface')
 
-#
-# Debian and Ubuntu 
-#
-
-if 'IFACE' in os.environ: 
-
-    interface = os.environ['IFACE']
-#
-# OL and Centos
-#
-
-else: 
-    parser = argparse.ArgumentParser(description='configure mellanox interface')
-    parser.add_argument('interface')
-
-    args = parser.parse_args()
-    interface = args.interface
+args = parser.parse_args()
+interface = args.interface
 
 if not interface: 
     print('no interface set')
