@@ -155,6 +155,7 @@ class WpaSupplicantService():
         return lib.systemd.is_enabled(self.service)['status']
 
 def _interfaces(config): 
+    """ list system interfaces based on shape """
     shape = lib.metadata.get_instance()['shape']
     print
     if config.getboolean('DEFAULT', 'auto') is True: 
@@ -166,7 +167,7 @@ def _interfaces(config):
     return interfaces
 
 def run_command(command):
-    """ Execute systemd command """
+    """ Execute shell command """
     result = {}
     process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     exit_code = process.wait()
@@ -183,6 +184,8 @@ def run_command(command):
 
 
 def template_wpa_config_file(config, instance_metadata):
+    """ template configuration file """
+
     directory = os.path.dirname(os.path.abspath(__file__))
 
     try: 
@@ -200,6 +203,8 @@ def template_wpa_config_file(config, instance_metadata):
     )
 
 def create_wpa_config_file(config, instance_metadata):
+    """ create WPA supplicant configuration file (one file for all interfaces) """
+
     changed = False
     instance_metadata = lib.metadata.get_instance()
     template = template_wpa_config_file(config, instance_metadata)
@@ -224,6 +229,7 @@ def create_wpa_config_file(config, instance_metadata):
     return changed
 
 def _should_configure(config, interface): 
+    """ check if interface should be configured """
     
     try: 
         ip_required = config.getboolean('DEFAULT', 'require_ip')
@@ -243,7 +249,7 @@ def _should_configure(config, interface):
     return True 
 
 def check_units(config, interface, write=True, start=True): 
-    """ TODO: modify for single interface """
+    """ TODO: simplify """
 
     rdma_interface = RdmaInterface(interface)
     should_configure = _should_configure(config, rdma_interface)
@@ -288,6 +294,8 @@ def check_units(config, interface, write=True, start=True):
                     rdma_interface.service.delete()
                 
 def reload_wpa_supplicant(config, interface): 
+    """ reload configuration for wpa_supplicant over socket connection """
+
     wpa = WpaSupplicantService(interface)
     reconfigure = wpa.reconfigure()
 
@@ -310,6 +318,9 @@ def check_configs(config, write=True):
     return changed
     
 def check_certificates(config, write=True): 
+
+    """ TODO split checking and certificate generation """
+
     new_bundle = None
     changed = False
     private_key = config['DEFAULT']['private_key']
