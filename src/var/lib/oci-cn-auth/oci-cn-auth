@@ -46,11 +46,11 @@ if __name__ == "__main__":
             reload = lib.util.check_configs(config, write=True)
 
             for interface in interfaces:
+                i = lib.util.WpaSupplicantService(interface)
 
                 changed = lib.util.check_units(config, interface, write=True, start=True)
                 if changed:
                     lib.util.reload_wpa_supplicant(config, interface)
 
                 if reload:
-                    i = lib.util.WpaSupplicantService(interface)
                     i.reconfigure()
