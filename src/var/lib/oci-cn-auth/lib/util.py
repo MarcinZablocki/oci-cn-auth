@@ -74,15 +74,18 @@ class WpaSupplicantService():
         if os.path.exists(return_socket_file):
             os.remove(return_socket_file)
 
-        return_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-        return_socket.bind(return_socket_file)
+        if os.path.exists(wpa_socket_file):
+            return_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            return_socket.bind(return_socket_file)
+    
+            return_socket.sendto(str.encode(message), wpa_socket_file)
+            (bytes, address) = return_socket.recvfrom(4096)
 
-        return_socket.sendto(str.encode(message), wpa_socket_file)
-        (bytes, address) = return_socket.recvfrom(4096)
-
-        reply = bytes.decode('utf-8')
-        return_socket.close()
-        os.remove(return_socket_file)
+            reply = bytes.decode('utf-8')
+            return_socket.close()
+            os.remove(return_socket_file)
+        else: 
+            reply = ""
 
         return reply
 
