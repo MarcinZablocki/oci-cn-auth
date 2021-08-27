@@ -316,6 +316,9 @@ set_dscp_to_prio(interface, DSCP_CNP_VALUE, DSCP_CNP_TC)
 set_pfc = [mlnx_qos, '-i', interface, '--pfc', '1,0,0,0,0,1,0,0']
 run_command(set_pfc)
 
+set_prio2buffer = [mlnx_qos, '-i', interface, '--prio2buffer', '1,0,0,0,0,1,0,0']
+run_command(set_prio2buffer)       
+
 set_priority_to_tc = [mlnx_qos, '-i', interface, '-p', '0,1,2,3,4,5,6,7']
 run_command(set_priority_to_tc)
 
