@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Save authentication data for 802.1X')
     parser.add_argument('-i', '--info', action='store_true')
     parser.add_argument('-c', '--config', default='/etc/rdma/oracle_rdma.conf')
+    parser.add_argument('--interface')
 
     args = parser.parse_args()
     config.sections()
@@ -30,7 +31,10 @@ if __name__ == "__main__":
 
     if __name__ == '__main__':
 
-        interfaces = lib.util._interfaces(config)
+        if args.interface: 
+            interface = [args.interface]
+        else: 
+            interfaces = lib.util._interfaces(config)
 
         if args.info:
             lib.util.check_certificates(config, write=False)

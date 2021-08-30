@@ -358,10 +358,13 @@ if os.path.isfile(sys_np_cnp_dscp):
     with open(sys_np_cnp_dscp, 'w') as np_cnp_dscp:
         np_cnp_dscp.write(str(DSCP_CNP_VALUE))
 
-run_command(oci_cn_auth)
+run_command(oci_cn_auth, '--interface', interface)
+
+# This should be fixed by RHBA-2021:0351, CEBA-2021:0351 and ELBA-2021-0351
 
 # Workaround for timer being stuck on boot on EL7
-restart_timer = [ systemctl, 'restart', 'oci-cn-auth.timer' ]
-run_command(restart_timer)
+#restart_timer = [ systemctl, 'restart', 'oci-cn-auth.timer' ]
+#run_command(restart_timer)
 
 print('Interface {} configuration complete'.format(interface))
+
