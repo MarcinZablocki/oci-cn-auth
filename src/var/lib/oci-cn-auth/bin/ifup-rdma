@@ -134,24 +134,11 @@ if not os.geteuid()==0:
 
 fail = False
 
+parser = argparse.ArgumentParser(description='configure mellanox interface')
+parser.add_argument('interface')
 
-#
-# Debian and Ubuntu 
-#
-
-if 'IFACE' in os.environ: 
-
-    interface = os.environ['IFACE']
-#
-# OL and Centos
-#
-
-else: 
-    parser = argparse.ArgumentParser(description='configure mellanox interface')
-    parser.add_argument('interface')
-
-    args = parser.parse_args()
-    interface = args.interface
+args = parser.parse_args()
+interface = args.interface
 
 if not interface: 
     print('no interface set')
@@ -329,6 +316,9 @@ set_dscp_to_prio(interface, DSCP_CNP_VALUE, DSCP_CNP_TC)
 set_pfc = [mlnx_qos, '-i', interface, '--pfc', '1,0,0,0,0,1,0,0']
 run_command(set_pfc)
 
+set_prio2buffer = [mlnx_qos, '-i', interface, '--prio2buffer', '1,0,0,0,0,1,0,0']
+run_command(set_prio2buffer)       
+
 set_priority_to_tc = [mlnx_qos, '-i', interface, '-p', '0,1,2,3,4,5,6,7']
 run_command(set_priority_to_tc)
 
@@ -368,10 +358,13 @@ if os.path.isfile(sys_np_cnp_dscp):
     with open(sys_np_cnp_dscp, 'w') as np_cnp_dscp:
         np_cnp_dscp.write(str(DSCP_CNP_VALUE))
 
-run_command(oci_cn_auth)
+run_command(oci_cn_auth, '--interface', interface)
+
+# This should be fixed by RHBA-2021:0351, CEBA-2021:0351 and ELBA-2021-0351
 
 # Workaround for timer being stuck on boot on EL7
-restart_timer = [ systemctl, 'restart', 'oci-cn-auth.timer' ]
-run_command(restart_timer)
+#restart_timer = [ systemctl, 'restart', 'oci-cn-auth.timer' ]
+#run_command(restart_timer)
 
 print('Interface {} configuration complete'.format(interface))
+

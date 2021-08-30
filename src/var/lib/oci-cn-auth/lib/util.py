@@ -14,13 +14,13 @@ import lib.cert
 import lib.systemd
 import lib.metadata
 
-class RdmaInterface(object): 
-    def __init__(self, interface): 
+class RdmaInterface():
+    def __init__(self, interface):
         self.interface = interface
         self.service = WpaSupplicantService(interface)
 
     @property
-    def is_up(self): 
+    def is_up(self):
         interfaces = psutil.net_if_stats()
         if self.interface not in interfaces:
             return False
@@ -28,12 +28,12 @@ class RdmaInterface(object):
             return interfaces[self.interface].isup
 
     @property
-    def ips(self): 
+    def ips(self):
         interfaces = psutil.net_if_addrs()
 
         ips = []
 
-        if self.interface not in interfaces: 
+        if self.interface not in interfaces:
             return ips
 
         for link in interfaces[self.interface]:
@@ -42,8 +42,8 @@ class RdmaInterface(object):
                     ips.append(link.address)
 
         return ips
-        
-class WpaSupplicantService(object):
+       
+class WpaSupplicantService():
     def __init__(self, interface): 
         self.interface = interface
         self.service = 'wpa_supplicant-wired@{}.service'.format(interface)
@@ -66,6 +66,52 @@ class WpaSupplicantService(object):
             return os.remove(self.unitfile)
         else: 
             return False
+
+    def sendAndReceive(self, message):
+        wpa_socket_file = '/var/run/wpa_supplicant/{}'.format(self.interface)
+        return_socket_file = '/tmp/{}.socket'.format(self.interface)
+
+        if os.path.exists(return_socket_file):
+            os.remove(return_socket_file)
+
+        if os.path.exists(wpa_socket_file):
+            return_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            return_socket.bind(return_socket_file)
+    
+            return_socket.sendto(str.encode(message), wpa_socket_file)
+            (bytes, address) = return_socket.recvfrom(4096)
+
+            reply = bytes.decode('utf-8')
+            return_socket.close()
+            os.remove(return_socket_file)
+        else: 
+            reply = ""
+
+        return reply
+
+    @property
+    def is_authenticated(self):
+
+        status = self.sendAndReceive('STATUS')
+        state = False
+
+        for line in status.splitlines():
+            if 'suppPortStatus' in line:
+                state=line.split('=')[1]
+
+        if state == 'Authorized':
+            return True
+        else:
+            return False
+
+    def reconfigure(self): 
+
+        status = self.sendAndReceive('RECONFIGURE')
+        return status
+    
+    def reauthenticate(self): 
+        status = self.sendAndReceive('REAUTHENTICATE')
+        return status
 
     def template(self):
         directory = os.path.dirname(os.path.abspath(__file__))
@@ -112,6 +158,7 @@ class WpaSupplicantService(object):
         return lib.systemd.is_enabled(self.service)['status']
 
 def _interfaces(config): 
+    """ list system interfaces based on shape """
     shape = lib.metadata.get_instance()['shape']
     print
     if config.getboolean('DEFAULT', 'auto') is True: 
@@ -123,7 +170,7 @@ def _interfaces(config):
     return interfaces
 
 def run_command(command):
-    """ Execute systemd command """
+    """ Execute shell command """
     result = {}
     process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     exit_code = process.wait()
@@ -140,6 +187,8 @@ def run_command(command):
 
 
 def template_wpa_config_file(config, instance_metadata):
+    """ template configuration file """
+
     directory = os.path.dirname(os.path.abspath(__file__))
 
     try: 
@@ -157,6 +206,8 @@ def template_wpa_config_file(config, instance_metadata):
     )
 
 def create_wpa_config_file(config, instance_metadata):
+    """ create WPA supplicant configuration file (one file for all interfaces) """
+
     changed = False
     instance_metadata = lib.metadata.get_instance()
     template = template_wpa_config_file(config, instance_metadata)
@@ -181,6 +232,7 @@ def create_wpa_config_file(config, instance_metadata):
     return changed
 
 def _should_configure(config, interface): 
+    """ check if interface should be configured """
     
     try: 
         ip_required = config.getboolean('DEFAULT', 'require_ip')
@@ -199,58 +251,62 @@ def _should_configure(config, interface):
             
     return True 
 
-def check_units(config, write=True, start=True): 
-    system_interfaces = _interfaces(config)
+def check_units(config, interface, write=True, start=True): 
+    """ TODO: simplify """
 
-    for i in system_interfaces: 
-        interface = RdmaInterface(i)
-        should_configure = _should_configure(config, interface)
+    rdma_interface = RdmaInterface(interface)
+    should_configure = _should_configure(config, rdma_interface)
         
-        if should_configure:
-            if interface.service.create_unit(write=False):
+    if should_configure:
+            if rdma_interface.service.create_unit(write=False):
                 if not write:
-                  print('Unit {} needs updating'.format(interface.interface))
+                  print('Unit {} needs updating'.format(rdma_interface.interface))
                 else:
-                  print('Updating unit: {}'.format(interface.interface))
-                interface.service.create_unit()
+                  print('Updating unit: {}'.format(rdma_interface.interface))
+                rdma_interface.service.create_unit()
                 if write:
                   print('Reloading systemd')
                   lib.systemd.reload()
 
             else: 
-                print('[ OK ] {}'.format(interface.service.service))
+                print('[ OK ] {}'.format(rdma_interface.service.service))
 
-            if not interface.service.is_enabled:
+            if not rdma_interface.service.is_enabled:
                 if start: 
-                    print('Enabling service {}'.format(interface.service.service))
-                    interface.service.enable()
+                    print('Enabling service {}'.format(rdma_interface.service.service))
+                    rdma_interface.service.enable()
                 else: 
-                    print('[ ERROR ] Service {} not enabled'.format(interface.service.service))
-            if not interface.service.is_running: 
+                    print('[ ERROR ] Service {} not enabled'.format(rdma_interface.service.service))
+            if not rdma_interface.service.is_running: 
                 if start: 
-                    print('Staring service {}'.format(interface.service.service))
-                    interface.service.start()
+                    print('Staring service {}'.format(rdma_interface.service.service))
+                    rdma_interface.service.start()
                 else: 
-                    print('[ ERROR ] Service {} not running'.format(interface.service.service))
-        else: 
+                    print('[ ERROR ] Service {} not running'.format(rdma_interface.service.service))
+    else: 
             if write:
-                if interface.service.is_running:
-                    print('Stopping {}'.format(interface.service.service)) 
-                    interface.service.stop()
-                if interface.service.is_enabled:
-                    print('Disabling {}'.format(interface.service.service)) 
-                    interface.service.disable()
+                if rdma_interface.service.is_running:
+                    print('Stopping {}'.format(rdma_interface.service.service)) 
+                    rdma_interface.service.stop()
+                if rdma_interface.service.is_enabled:
+                    print('Disabling {}'.format(rdma_interface.service.service)) 
+                    rdma_interface.service.disable()
 
-                if os.path.isfile(interface.service.unitfile): 
-                    print('Deleting {}'.format(interface.service.service))
-                    interface.service.delete()
+                if os.path.isfile(rdma_interface.service.unitfile): 
+                    print('Deleting {}'.format(rdma_interface.service.service))
+                    rdma_interface.service.delete()
                 
-def reload_wpa_supplicant(): 
-    for p in psutil.process_iter():
-        pinfo = p.as_dict(attrs=['pid', 'name'])
-        if pinfo['name'] == 'wpa_supplicant':
-            print('Sending HUP signal to PID: {}'.format(pinfo['pid']))
-            p.send_signal(psutil.signal.SIGHUP)
+def reload_wpa_supplicant(config, interface): 
+    """ reload configuration for wpa_supplicant over socket connection """
+
+    wpa = WpaSupplicantService(interface)
+    reconfigure = wpa.reconfigure()
+
+    #for p in psutil.process_iter():
+    #    pinfo = p.as_dict(attrs=['pid', 'name'])
+    #    if pinfo['name'] == 'wpa_supplicant':
+    #        print('Sending HUP signal to PID: {}'.format(pinfo['pid']))
+    #        p.send_signal(psutil.signal.SIGHUP)
 
 
 def check_configs(config, write=True):
@@ -261,16 +317,13 @@ def check_configs(config, write=True):
     if write: 
         print('Checking wpa-supplicant config file')
         changed = create_wpa_config_file(config, instance_metadata)
-    
-    if not changed: 
-        print('[ OK ] WPA Supplicant configuration')
-                       
-    if changed and write: 
-        print('Configuration changed reloading WPA supplicant')
-        reload_wpa_supplicant()
-    
 
+    return changed
+    
 def check_certificates(config, write=True): 
+
+    """ TODO split checking and certificate generation """
+
     new_bundle = None
     changed = False
     private_key = config['DEFAULT']['private_key']
@@ -311,12 +364,9 @@ def check_certificates(config, write=True):
         print('Old bundle not found. Generating PKCS12')
         new_bundle = lib.cert.NewBundle(metadata_cert, metadata_private_key, private_key_passwd, metadata_ca)
         
-
     if new_bundle and write: 
         with open(private_key, 'wb') as pkcs12:
             pkcs12.write(new_bundle.export_pkcs12())
             changed = True
-
-    if changed and write: 
-        print("Reloading WPA Supplicant")
-        reload_wpa_supplicant()
+    
+    return changed

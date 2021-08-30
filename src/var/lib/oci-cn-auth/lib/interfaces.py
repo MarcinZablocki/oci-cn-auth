@@ -1,4 +1,6 @@
 import os 
+import psutil
+import socket
 from lib.config import SHAPES
 
 def get_dev_name_by_id(id): 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 import os
 import argparse
 import json
@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Save authentication data for 802.1X')
     parser.add_argument('-i', '--info', action='store_true')
     parser.add_argument('-c', '--config', default='/etc/rdma/oracle_rdma.conf')
+    parser.add_argument('--interface')
 
     args = parser.parse_args()
     config.sections()
@@ -23,20 +24,37 @@ if __name__ == "__main__":
 
     if not config.get('DEFAULT', 'password'):
         raise KeyError("Private key password not found in the configuration file.")
-    
+
     if not config.get('DEFAULT', 'auto'):
         if not config.get('DEFAULT', 'interfaces'):
             raise KeyError("Interface definitions not found in the configuration file.")
 
+    if __name__ == '__main__':
 
-    if args.info: 
-        lib.util.check_certificates(config, write=False)
-        lib.util.check_configs(config, write=False)
-        lib.util.check_units(config, write=False, start=False)
-    else: 
-        lib.util.check_certificates(config, write=True)
-        lib.util.check_configs(config, write=True)
-        lib.util.check_units(config, write=True, start=True)
-    
+        if args.interface: 
+            interface = [args.interface]
+        else: 
+            interfaces = lib.util._interfaces(config)
 
-    
+        if args.info:
+            lib.util.check_certificates(config, write=False)
+            lib.util.check_configs(config, write=False)
+
+            for interface in interfaces:
+                i = lib.util.WpaSupplicantService(interface)
+                lib.util.check_units(config, interface,  write=False, start=False)
+                print(i.is_authenticated)
+
+        else:
+            reload = lib.util.check_certificates(config, write=True)
+            reload = lib.util.check_configs(config, write=True)
+
+            for interface in interfaces:
+                i = lib.util.WpaSupplicantService(interface)
+
+                changed = lib.util.check_units(config, interface, write=True, start=True)
+                if changed:
+                    lib.util.reload_wpa_supplicant(config, interface)
+
+                if reload:
+                    i.reconfigure()
