@@ -42,8 +42,8 @@ if __name__ == "__main__":
                 print(i.is_authenticated)
 
         else:
-            reload = lib.util.check_certificates(config, write=True)
-            reload = lib.util.check_configs(config, write=True)
+            reload_certificate = lib.util.check_certificates(config, write=True)
+            reload_config = lib.util.check_configs(config, write=True)
 
             for interface in interfaces:
                 i = lib.util.WpaSupplicantService(interface)
@@ -52,5 +52,5 @@ if __name__ == "__main__":
                 if changed:
                     lib.util.reload_wpa_supplicant(config, interface)
 
-                if reload:
+                if reload_certificate or reload_config:
                     i.reconfigure()
