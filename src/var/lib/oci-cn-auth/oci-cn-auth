@@ -32,7 +32,7 @@ if __name__ == "__main__":
     if __name__ == '__main__':
 
         if args.interface: 
-            interface = [args.interface]
+            interfaces = [args.interface]
         else: 
             interfaces = lib.util._interfaces(config)
 

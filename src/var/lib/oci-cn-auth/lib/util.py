@@ -263,7 +263,7 @@ def check_units(config, interface, write=True, start=True):
                   print('Unit {} needs updating'.format(rdma_interface.interface))
                 else:
                   print('Updating unit: {}'.format(rdma_interface.interface))
-                rdma_interface.service.create_unit()
+                  rdma_interface.service.create_unit()
                 if write:
                   print('Reloading systemd')
                   lib.systemd.reload()
