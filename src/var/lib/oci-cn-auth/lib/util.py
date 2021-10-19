@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 from jinja2 import Environment, FileSystemLoader
 import filecmp
-import os
+import os, sys
 import shutil
 import socket
 import OpenSSL
@@ -349,7 +349,9 @@ def check_certificates(config, write=True):
     new_cert = lib.cert.Cert(metadata_cert)
 
     if not new_cert.get_san():
-        raise ValueError('Certificate missing SAN information. Not valid for Cluster Networking')
+        #raise ValueError('Certificate missing SAN information. Not valid for Cluster Networking')
+        print('Certificate missing SAN information. Not valid for Cluster Networking')
+        sys.exit(1)
     
     if old_bundle: 
         if not old_bundle.not_valid_after == new_cert.not_valid_after:
