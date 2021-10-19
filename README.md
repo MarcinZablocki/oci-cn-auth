@@ -13,6 +13,7 @@ Currently supported operating systems are:
 * Ubuntu 16.04 (Xenial) 
 * Ubuntu 18.04 (Bionic) 
 * Ubuntu 20.04 (Focal) 
+* SLES15 SP3
 
 # Configuration 
 
