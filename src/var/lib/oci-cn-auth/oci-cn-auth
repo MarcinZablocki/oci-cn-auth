@@ -22,14 +22,17 @@ if __name__ == "__main__":
     config.read(args.config)
 
     if not config.get('DEFAULT', 'private_key'):
-        raise KeyError("Prive key localtion not found in the configuration file.")
+        print("Private key localtion not found in the configuration file.")
+        sys.exit(1)
 
     if not config.get('DEFAULT', 'password'):
-        raise KeyError("Private key password not found in the configuration file.")
+        print("Private key password not found in the configuration file.")
+        sys.exit(1)
 
     if not config.get('DEFAULT', 'auto'):
         if not config.get('DEFAULT', 'interfaces'):
-            raise KeyError("Interface definitions not found in the configuration file.")
+            print("Interface definitions not found in the configuration file.")
+            sys.exit(1)
 
     if __name__ == '__main__':
 
