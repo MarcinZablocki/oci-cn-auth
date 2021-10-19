@@ -5,6 +5,8 @@ import json
 import configparser
 import lib.util
 import lib.metadata
+from random import randint
+from time import sleep
 
 config = configparser.ConfigParser()
 
@@ -47,14 +49,16 @@ if __name__ == "__main__":
 
         else:
             reload = lib.util.check_certificates(config, write=True)
-            reload = lib.util.check_configs(config, write=True)
+            reload_configs = lib.util.check_configs(config, write=True)
 
             for interface in interfaces:
                 i = lib.util.WpaSupplicantService(interface)
 
                 changed = lib.util.check_units(config, interface, write=True, start=True)
                 if changed:
+                    sleep(randint(5,15))
                     lib.util.reload_wpa_supplicant(config, interface)
 
-                if reload:
+                if reload or reload_configs:
+                    sleep(randint(5,15))
                     i.reconfigure()
