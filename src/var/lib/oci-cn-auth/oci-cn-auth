@@ -48,7 +48,7 @@ if __name__ == "__main__":
             for interface in interfaces:
                 i = lib.util.WpaSupplicantService(interface)
                 lib.util.check_units(config, interface,  write=False, start=False)
-                print(i.is_authenticated)
+                print("auth: {}".format(i.is_authenticated))
 
         else:
             reload = lib.util.check_certificates(config, write=True)
