@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-import os
+import sys
 import argparse
-import json
 import configparser
 import lib.util
 import lib.metadata

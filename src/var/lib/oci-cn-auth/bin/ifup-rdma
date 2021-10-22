@@ -6,7 +6,6 @@
 import shutil
 import argparse
 import os
-import requests
 import subprocess
 import sys
 import configparser
@@ -358,7 +357,7 @@ if os.path.isfile(sys_np_cnp_dscp):
     with open(sys_np_cnp_dscp, 'w') as np_cnp_dscp:
         np_cnp_dscp.write(str(DSCP_CNP_VALUE))
 
-interface_auth[oci_cn_auth, '--interface', interface]
+interface_auth = [oci_cn_auth, '--interface', interface]
 run_command(interface_auth)
 
 # This should be fixed by RHBA-2021:0351, CEBA-2021:0351 and ELBA-2021-0351
