@@ -80,7 +80,7 @@ class CertBundle():
                 crypto.dump_certificate(
                     crypto.FILETYPE_PEM, self.cert)
                     ),
-                default_backend()
+            default_backend()
             )
         return certificate_information.not_valid_after
 
