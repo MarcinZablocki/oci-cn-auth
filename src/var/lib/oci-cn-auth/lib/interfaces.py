@@ -1,12 +1,14 @@
-import os 
-import psutil
-import socket
+""" Interface helper functions """
+
+import os
 from lib.config import SHAPES
 
-def get_dev_name_by_id(id): 
-    """ This assumes there are no virtual interfaces """
-    
-    base_path = '/sys/bus/pci/devices/{}/net/'.format(id)
+def get_dev_name_by_id(pci_id):
+    """ This assumes there are no virtual interfaces
+        Returns interface name based on PCI ID
+    """
+
+    base_path = f"/sys/bus/pci/devices/{pci_id}/net/"
     interface_name=os.listdir(base_path)[0]
     return interface_name
 
@@ -15,10 +17,10 @@ def get_interfaces_by_shape(shape):
 
     interfaces = []
 
-    if shape in SHAPES: 
+    if shape in SHAPES:
         ids = SHAPES[shape]
-        
-        for id in ids: 
-            interfaces.append(get_dev_name_by_id(id))
+
+        for pci_id in ids:
+            interfaces.append(get_dev_name_by_id(pci_id))
 
     return interfaces

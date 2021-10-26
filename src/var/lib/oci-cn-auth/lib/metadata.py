@@ -1,3 +1,7 @@
+"""
+Read and return metadata
+
+"""
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -28,7 +32,9 @@ def get_metadata(endpoint):
     return session.get(request_url, headers=headers, timeout=DEFAULT_TIMEOUT).json()
 
 def get_identity():
+    """ return identity metadata """
     return get_metadata('identity')
 
 def get_instance():
+    """ return instance metadata """
     return get_metadata('instance')

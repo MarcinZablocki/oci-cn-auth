@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
+"""
+
+Oracle Cloud - Cluster Network authentication helper
+(c) 2020,2021 Oracle
+
+Marcin Zablocki <marcin.zablocki@oracle.com>
+
+"""
 import sys
 import argparse
 import configparser
-import lib.util
-import lib.metadata
 from random import randint
 from time import sleep
+import lib.util
+import lib.metadata
+
 
 config = configparser.ConfigParser()
 
@@ -35,10 +44,10 @@ if __name__ == "__main__":
 
     if __name__ == '__main__':
 
-        if args.interface: 
+        if args.interface:
             interfaces = [args.interface]
-        else: 
-            interfaces = lib.util._interfaces(config)
+        else:
+            interfaces = lib.util.interface_list(config)
 
         if args.info:
             lib.util.check_certificates(config, write=False)
@@ -47,7 +56,7 @@ if __name__ == "__main__":
             for interface in interfaces:
                 i = lib.util.WpaSupplicantService(interface)
                 lib.util.check_units(config, interface,  write=False, start=False)
-                print("auth: {}".format(i.is_authenticated))
+                print(f"auth: {i.is_authenticated}")
 
         else:
             reload = lib.util.check_certificates(config, write=True)
@@ -59,7 +68,7 @@ if __name__ == "__main__":
                 changed = lib.util.check_units(config, interface, write=True, start=True)
                 if changed:
                     sleep(randint(5,15))
-                    lib.util.reload_wpa_supplicant(config, interface)
+                    lib.util.reload_wpa_supplicant(interface)
 
                 if reload or reload_configs:
                     sleep(randint(5,15))
