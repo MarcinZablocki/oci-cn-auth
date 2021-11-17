@@ -1,10 +1,13 @@
 #
 # oci-cn-auth. service providing configuration of wpa_supplicant for specified interface
-# to authenticate to OCI cluster network. 
+# to authenticate to OCI cluster network.
 #
 [Unit]
-Description=OCI HPC Tools: renew WPA certificates
+Description=OCI Cluster Network Authentication: renew WPA certificates (0.2.12-3)
 
 [Service]
 Type=oneshot
-ExecStart=/var/lib/oci-cn-auth/oci-cn-auth
+ExecStart=/var/lib/oci-cn-auth/oci-cn-auth --start
+
+[Install]
+WantedBy=multi-user.target
