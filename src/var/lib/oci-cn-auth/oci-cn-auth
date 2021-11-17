@@ -1,66 +1,86 @@
 #!/usr/bin/env python3
+"""
+
+Oracle Cloud - Cluster Network authentication helper
+(c) 2020,2021 Oracle
+
+"""
+import os
 import sys
 import argparse
 import configparser
-import lib.util
-import lib.metadata
 from random import randint
 from time import sleep
+import lib.util
+import lib.metadata
 
 config = configparser.ConfigParser()
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Save authentication data for 802.1X')
-    parser.add_argument('-i', '--info', action='store_true')
-    parser.add_argument('-c', '--config', default='/etc/rdma/oracle_rdma.conf')
-    parser.add_argument('--interface')
+	uid = os.geteuid()
+	if uid != 0:
+		print("Error: oci-cn-auth needs to be run as sudo or root privileges")
+		sys.exit(1)
 
-    args = parser.parse_args()
-    config.sections()
-    config.read(args.config)
+	parser = argparse.ArgumentParser(description='Save authentication data for 802.1X')
+	parser.add_argument('-i', '--info', action='store_true')
+	parser.add_argument('-c', '--config', default='/etc/rdma/oracle_rdma.conf')
+	parser.add_argument('--interface')
+	parser.add_argument('--start', action='store_true')
 
-    if not config.get('DEFAULT', 'private_key'):
-        print("Private key localtion not found in the configuration file.")
-        sys.exit(1)
+	args = parser.parse_args()
+	config.sections()
+	config.read(args.config)
 
-    if not config.get('DEFAULT', 'password'):
-        print("Private key password not found in the configuration file.")
-        sys.exit(1)
+	if not config.get('DEFAULT', 'private_key'):
+		print("Private key location not found in the configuration file.")
+		sys.exit(1)
 
-    if not config.get('DEFAULT', 'auto'):
-        if not config.get('DEFAULT', 'interfaces'):
-            print("Interface definitions not found in the configuration file.")
-            sys.exit(1)
+	if not config.get('DEFAULT', 'password'):
+		print("Private key password not found in the configuration file.")
+		sys.exit(1)
 
-    if __name__ == '__main__':
+	if not config.get('DEFAULT', 'auto'):
+		if not config.get('DEFAULT', 'interfaces'):
+			print("Interface definitions not found in the configuration file.")
+			sys.exit(1)
 
-        if args.interface: 
-            interfaces = [args.interface]
-        else: 
-            interfaces = lib.util._interfaces(config)
+	if args.start:
+		# Print the version to serial console and stdout
+		with open('/var/lib/oci-cn-auth/.version-oci-cn-auth') as f:
+			version = f.readline()
+			version = version.strip()
+			cmd = f'echo oci-cn-auth: {version} > /dev/console'
+			print(f'oci-cn-auth {version}')
+			os.system(cmd)
 
-        if args.info:
-            lib.util.check_certificates(config, write=False)
-            lib.util.check_configs(config, write=False)
+	if args.interface:
+		interfaces = [args.interface]
+	else:
+		interfaces = lib.util.interface_list(config)
 
-            for interface in interfaces:
-                i = lib.util.WpaSupplicantService(interface)
-                lib.util.check_units(config, interface,  write=False, start=False)
-                print("auth: {}".format(i.is_authenticated))
+	if args.info:
+		lib.util.check_certificates(config, write=False)
+		lib.util.check_configs(config, write=False)
 
-        else:
-            reload = lib.util.check_certificates(config, write=True)
-            reload_configs = lib.util.check_configs(config, write=True)
+		for interface in interfaces:
+			i = lib.util.WpaSupplicantService(interface)
+			lib.util.check_units(config, interface, write=False, start=False)
+			print(f"auth: {i.is_authenticated}")
 
-            for interface in interfaces:
-                i = lib.util.WpaSupplicantService(interface)
+	else:
+		reload = lib.util.check_certificates(config, write=True)
+		reload_configs = lib.util.check_configs(config, write=True)
 
-                changed = lib.util.check_units(config, interface, write=True, start=True)
-                if changed:
-                    sleep(randint(5,15))
-                    lib.util.reload_wpa_supplicant(config, interface)
+		for interface in interfaces:
+			i = lib.util.WpaSupplicantService(interface)
 
-                if reload or reload_configs:
-                    sleep(randint(5,15))
-                    i.reconfigure()
+			changed = lib.util.check_units(config, interface, write=True, start=True)
+			if changed:
+				sleep(randint(5, 15))
+				lib.util.reload_wpa_supplicant(interface)
+
+			if reload or reload_configs:
+				sleep(randint(5, 15))
+				i.reconfigure()

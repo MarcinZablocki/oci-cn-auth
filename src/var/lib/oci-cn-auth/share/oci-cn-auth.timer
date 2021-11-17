@@ -6,7 +6,7 @@
 # authentication / configuration tool first. 
 #
 [Unit]
-Description=oci-cn-auth timer
+Description=OCI Cluster Network Authentication: oci-cn-auth timer (0.2.12-2)
 
 [Timer]
 OnBootSec=15min
