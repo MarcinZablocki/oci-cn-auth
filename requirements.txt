@@ -1,0 +1,10 @@
+pytest
+pytest-mock
+pytest-cov
+
+cryptography~=3.4.7
+psutil~=5.5.1
+Jinja2~=2.10.1
+requests~=2.22.0
+
+urllib3~=1.25.8

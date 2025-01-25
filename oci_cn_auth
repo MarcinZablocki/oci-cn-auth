@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""
+
+Oracle Cloud - Cluster Network authentication helper
+(c) 2020-2023 Oracle
+
+"""
+import os
+import sys
+import argparse
+import configparser
+from random import randint
+from time import sleep
+
+import helpers
+from helpers.util import check_certificates, \
+    check_configs, WpaSupplicantService, \
+    check_units, reload_wpa_supplicant, \
+    output_to_console, stat_certificate
+
+config = configparser.ConfigParser()
+
+if __name__ == "__main__":
+
+    uid = os.geteuid()
+    if uid != 0:
+        print("Error: oci_cn_auth needs to be run as sudo or root privileges", flush=True)
+        sys.exit(1)
+
+    parser = argparse.ArgumentParser(description='Save authentication data for 802.1X')
+    parser.add_argument('-i', '--info', action='store_true')
+    parser.add_argument('-c', '--config', default='/etc/rdma/oracle_rdma.conf')
+    parser.add_argument('--interface')
+    parser.add_argument('--start', action='store_true')
+    parser.add_argument('--stop', action='store_true')
+
+    args = parser.parse_args()
+    config.sections()
+    config.read(args.config)
+
+    if not config.get('DEFAULT', 'private_key'):
+        print("Private key location not found in the configuration file.", flush=True)
+        sys.exit(1)
+
+    if not config.get('DEFAULT', 'password'):
+        print("Private key password not found in the configuration file.", flush=True)
+        sys.exit(1)
+
+    if not config.get('DEFAULT', 'auto'):
+        if not config.get('DEFAULT', 'interfaces'):
+            print("Interface definitions not found in the configuration file.", flush=True)
+            sys.exit(1)
+
+    if not os.path.isdir('/var/run/oci-cn-auth'):
+        try:
+            os.mkdir('/var/run/oci-cn-auth', mode=0o755)
+        except Exception as e:
+            print('Failed to create run directory', flush=True)
+            sys.exit(1)
+    else:
+        try:
+            os.chmod('/var/run/oci-cn-auth', mode=0o755)
+        except Exception as e:
+            print('Failed to update run directory', flush=True)
+            sys.exit(1)
+
+    if args.start:
+        # Print the version to serial console and stdout
+        with open('/opt/oci-hpc/oci-cn-auth/.version-oci_cn_auth', encoding="UTF-8") as f:
+            version = f.readline()
+            version = version.strip()
+            print(f'{version}', flush=True)
+            output_to_console(f'oci_cn_auth: {version} start')
+        # Enable timer
+        print("Enabling certificate renew timer", flush=True)
+        helpers.systemd.enable('oci-cn-auth-renew.timer')
+        # Start timer
+        print("Starting certificate renew timer", flush=True)
+        helpers.systemd.start('oci-cn-auth-renew.timer')
+        sys.exit(0)
+
+    if args.interface:
+        interfaces = [args.interface]
+        all_interfaces = helpers.util.interface_list(config)
+        try:
+            n = all_interfaces.index(interfaces[0])
+            sleep(n*2)
+        except ValueError:
+            pass
+    else:
+        interfaces = helpers.util.interface_list(config)
+
+    if args.stop:
+        # Stop timer
+        print("Stopping certificate renew timer", flush=True)
+        helpers.systemd.stop('oci-cn-auth-renew.timer')
+        # Disable timer
+        print("Disabling certificate renew timer", flush=True)
+        helpers.systemd.disable('oci-cn-auth-renew.timer')
+        # On shutdown remove the interface configurations and certificate
+        print("Removing interface WPA configurations", flush=True)
+        for interface in interfaces:
+            i = WpaSupplicantService(interface)
+            i.disable()
+            i.delete()
+        print("Removing certificate", flush=True)
+        helpers.util.delete_certificate(config)
+        helpers.util.delete_wpa_config_file()
+        sys.exit(0)
+
+    if args.info:
+        check_certificates(config, write=False)
+        check_configs(config, None, write=False)
+        stat_certificate(config)
+        for interface in interfaces:
+            i = WpaSupplicantService(interface)
+            print(f"{interface} active: {i.is_running} authenticated: {i.is_authenticated}", flush=True)
+            i.dump_state
+
+    else:
+        # Check if re-authentication is in progress
+        # Check if within window of re-authentication timer
+        reauth_in_progress = False
+        if stat_certificate(config):
+            reauth_in_progress = True
+        for interface in interfaces:
+            i = WpaSupplicantService(interface)
+            if i.is_running:
+                if not i.is_authenticated:
+                    print(f"{interface} re-authentication in progress", flush=True)
+                    i.dump_state
+                    reauth_in_progress = True
+            else:
+                print(f"{interface} wpa_supplicant not running", flush=True)
+        if reauth_in_progress:
+            print("Waiting 5 minutes to re-authenticate", flush=True)
+            sleep(300)
+
+        RELOAD_CERTS, cluster_info = check_certificates(config, write=True)
+        RELOAD_CONFIGS = check_configs(config, cluster_info, write=True)
+
+        n = len(interfaces)
+        for interface in interfaces:
+            reconfigure = False
+            CHANGED = check_units(config, interface, write=True, start=True)
+            if CHANGED:
+                reconfigure = True
+            elif RELOAD_CERTS:
+                reconfigure = True
+            elif RELOAD_CONFIGS:
+                reconfigure = True
+
+            if reconfigure and not args.interface:
+                sleep(2)
+                i = WpaSupplicantService(interface)
+                status = i.reconfigure()
+                print(f"{interface} reconfigure: {status}", flush=True)
+
+
+

@@ -1,0 +1,4 @@
+[MASTER]
+# Remember to change path to your dev box for make to work locally
+init-hook='import sys; sys.path.append("/home/rkisnah/src/oci-cn-auth")'
+ignore-patterns=src

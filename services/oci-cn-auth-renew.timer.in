@@ -1,0 +1,17 @@
+#
+# oci-cn-auth-renew.timer providing configuration of wpa_supplicant for specified interface
+# to authenticate to OCI cluster network.
+#
+# The timer is set to delay for 15 minutes on boot, since the ifup proces will run
+# authentication / configuration tool first.
+#
+[Unit]
+Description=OCI Cluster Network Authentication: oci-cn-auth renew timer (__VERSION__)
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=15min
+RandomizedDelaySec=15
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+.idea/**
+input_ocibuild
+output_ocibuild*
+venv
+__pycache__
+.coverage
+*.rpm
+*.deb
